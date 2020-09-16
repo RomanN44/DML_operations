@@ -1,9 +1,10 @@
 <?php
 namespace RomanN44\DML_instructions;
 
-require_once('NonWhereClass.php');
+require_once('BaseInterface.php');
+require_once('InsertFunctionInterface.php');
 
-class Insert extends NonWhereClass
+class Insert implements BaseInterface, InsertFunctionInterface
 {
 
     /**
@@ -22,21 +23,21 @@ class Insert extends NonWhereClass
     private $countColumns;
 
     /**
-     * возвращает sql-команду
-     * 
-     * @return string
+     * @var string
      */
-    public function getInstruction()
-    {
-        return $this->instruction;
-    }
+    private $tableName;
+    
+    /**
+     * @var string
+     */
+    private $instruction;
 
     /**
      * собирает sql-команду
      * 
      * @return string
      */
-    public function buildInstruction()
+    public function getRaw()
     {
         $this->instruction .= " INSERT INTO ";
         if($this->tableName)

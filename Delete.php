@@ -1,10 +1,28 @@
 <?php
 namespace RomanN44\DML_instructions;
 
-require_once('WhereClass.php');
+require_once('DeleteFunctionInterface.php');
+require_once('SqlWhere.php');
+require_once('BaseInterface.php');
 
-class Delete extends WhereClass
+class Delete implements DeleteFunctionInterface, SqlWhere, BaseInterface
 {
+
+        /**
+     * @var string
+     */
+    private $tableName;
+    
+    /**
+     * @var string
+     */
+    private $instruction;
+
+     /**
+     * @var string
+     */
+    private $where;
+
     /**
      * отчищает sql-команду и прочие конскрукции
      * 
@@ -45,7 +63,7 @@ class Delete extends WhereClass
      * 
      * @return string
      */
-    public function buildInstruction()
+    public function getRaw()
     {
         $this->instruction .= "DELETE FROM ";
         if($this->tableName)
@@ -59,16 +77,6 @@ class Delete extends WhereClass
             $this->instruction .= " WHERE ". $this->where;
         }
 
-        return $this->instruction;
-    }
-
-    /**
-     * возвращает sql-команду
-     * 
-     * @return string
-     */
-    public function getInstruction()
-    {
         return $this->instruction;
     }
 
@@ -104,11 +112,34 @@ class Delete extends WhereClass
     /**
      * создает where-конструкцию
      * 
-     * @param array $condition 
+     * @param array $condition
+     * @param string $operator 
      * @return $this
      */
-    public function where(array $condition)
+    public function where(array $condition, string $operator = "")
     {
+        if($operator != "")
+        {
+            switch(mb_strtolower($operator))
+            {
+                case "and":{
+                    $this->where .= " AND ";
+                } break;
+                case "or":{
+                    $this->where .= " OR ";
+                } break;
+                case "xor":{
+                    $this->where .= " XOR ";
+                } break;
+                case "not":{
+                    $this->where .= " NOT ";
+                } break;
+                default:{
+                    throw new Exception("Ошибка в конструкции Where! Неизвестный оператор!");
+                } break;
+            }
+        }
+
         $operand = mb_strtolower($condition[0], 'UTF-8');
 
         if($operand == 'in' || $operand == 'not in')
@@ -165,57 +196,5 @@ class Delete extends WhereClass
             }
         }
         return $this;    
-    }
-
-    /**
-     * добавляет and к where-конструкци
-     * 
-     * @param array $condition 
-     * @return $this
-     */
-    public function andWhere(array $condition)
-    {
-        $this->where .= " AND ";
-        $this->where($condition);
-        return $this;
-    }
-
-    /**
-     * добавляет or к where-конструкци
-     * 
-     * @param array $condition
-     * @return $this 
-     */
-    public function orWhere(array $condition)
-    {
-        $this->where .= " OR ";
-        $this->where($condition);
-        return $this;
-    }
-
-     /**
-     * добавляет xor к where-конструкци
-     * 
-     * @param array $condition 
-     * @return $this
-     */
-    public function xorWhere(array $condition)
-    {
-        $this->where .= " XOR ";
-        $this->where($condition);
-        return $this;
-    }
-
-     /**
-     * добавляет not к where-конструкци
-     * 
-     * @param array $condition 
-     * @return $this
-     */
-    public function notWhere(array $condition)
-    {
-        $this->where .= " NOT ";
-        $this->where($condition);
-        return $this;
     }
 }
