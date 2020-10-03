@@ -1,13 +1,13 @@
 <?php
 namespace RomanN44\DML_instructions;
 
-require_once('SqlWhere.php');
+require_once('SqlCondition.php');
 require_once('BaseInterface.php');
 require_once('SelectFunctionInterface.php');
 require_once('SqlQueryLimitable.php');
 require_once('SqlQueryOffsetable.php');
 
-class Select implements BaseInterface, SqlWhere, SelectFunctionInterface, SqlQueryOffsetable, SqlQueryLimitable
+class Select implements BaseInterface, SelectFunctionInterface, SqlQueryOffsetable, SqlQueryLimitable
 {
     /**
      * @var string
@@ -75,17 +75,13 @@ class Select implements BaseInterface, SqlWhere, SelectFunctionInterface, SqlQue
         } else {
             throw new Exception("Ошибка в названии таблицы! Название не может быть пустым!");
         }
+        if($this->join)
+        {
+            $this->instruction .= $this->join;
+        }
         if($this->where)
         {
             $this->instruction .= " WHERE ". $this->where;
-        }
-        if($this->limit)
-        {
-            $this->instruction .= " LIMIT ". $this->limit;
-        }
-        if($this->offset)
-        {
-            $this->instruction .= " OFFSET ". $this->offset;
         }
         if($this->groupBy)
         {
@@ -95,9 +91,13 @@ class Select implements BaseInterface, SqlWhere, SelectFunctionInterface, SqlQue
         {
             $this->instruction .= " ORDER BY ". $this->orderBy;
         }
-        if($this->join)
+        if($this->limit)
         {
-            $this->instruction .= $this->join;
+            $this->instruction .= " LIMIT ". $this->limit;
+        }
+        if($this->offset)
+        {
+            $this->instruction .= " OFFSET ". $this->offset;
         }
 
         return $this->instruction;
@@ -114,11 +114,11 @@ class Select implements BaseInterface, SqlWhere, SelectFunctionInterface, SqlQue
 
                 if (is_array($column)) {
                     list($name, $alias) = $column;
-                    $this->select .= "`{$name}` as `{$alias}`";
+                    $this->select .= "{$name} as {$alias}";
                 } else {
-                    $this->select .= "`{$column}`";
+                    $this->select .= "{$column}";
                 }
-                $this->select .= ',';
+                $this->select .= ', ';
             }
         } else {
             
@@ -157,199 +157,16 @@ class Select implements BaseInterface, SqlWhere, SelectFunctionInterface, SqlQue
     }
 
     /**
-     * отчищает sql-команду и прочие конскрукции
-     * 
-     * @return $this
-     */
-    public function clear()
-    {
-        $this->instruction = "";
-        $this->clearTable();
-        $this->clearSelect();
-        $this->clearWhere();
-        $this->clearLimit();
-        $this->clearOffset();
-        $this->clearOrderBy();
-        $this->clearGroupBy();
-        $this->clearJoin();
-        return $this;
-    }
-
-     /**
-     * отчищает значение переменной tableName
-     * 
-     * @return $this
-     */
-    public function clearTable()
-    {
-        $this->tableName = "";
-        return $this;
-    }
-
-    /**
-     * отчищает значение where
-     * 
-     * @return $this
-     */
-    public function clearWhere()
-    {
-        $this->where = "";
-        return $this;
-    }
-
-    /**
-     * отчищает значение переменной $select 
-     * 
-     * @return $this;
-     */
-    public function clearSelect()
-    {
-        $this->select = "";
-        return $this;
-    }
-
-    /**
-     * отчищает значение переменной $limit 
-     * 
-     * @return $this;
-     */
-    public function clearLimit()
-    {
-        $this->limit = "";
-        return $this;
-    }
-
-    /**
-     * отчищает значение переменной $offset 
-     * 
-     * @return $this;
-     */
-    public function clearOffset()
-    {
-        $this->offset = "";
-        return $this;
-    }
-
-    /**
-     * отчищает значение переменной $orderBy 
-     * 
-     * @return $this;
-     */
-    public function clearOrderBy()
-    {
-        $this->orderBy = "";
-        return $this;
-    }
-
-    /**
-     * отчищает значение переменной $groupBy 
-     * 
-     * @return $this;
-     */
-    public function clearGroupBy()
-    {
-        $this->groupBy = "";
-        return $this;
-    }
-
-    /**
-     * отчищает значение переменной $join 
-     * 
-     * @return $this;
-     */
-    public function clearJoin()
-    {
-        $this->join = "";
-        return $this;
-    }
-
-    /**
      * создает where-конструкцию
      * 
      * @param array $condition
      * @param string $operator 
      * @return $this
      */
-    public function where(array $condition, string $operator = "")
+    public function setWhere(SqlCondition $condition)
     {
-        if($operator != "")
-        {
-            switch(mb_strtolower($operator))
-            {
-                case "and":{
-                    $this->where .= " AND ";
-                } break;
-                case "or":{
-                    $this->where .= " OR ";
-                } break;
-                case "xor":{
-                    $this->where .= " XOR ";
-                } break;
-                case "not":{
-                    $this->where .= " NOT ";
-                } break;
-                default:{
-                    throw new Exception("Ошибка в конструкции Where! Неизвестный оператор!");
-                } break;
-            }
-        }
-
-        $operand = mb_strtolower($condition[0], 'UTF-8');
-
-        if($operand == 'in' || $operand == 'not in')
-        {
-            $cnt = count($condition[2]);
-            $idx = 0;
-            $list = "";
-
-            foreach ($condition[2] as $value)
-            {
-                $list .= $value . (++$idx < $cnt ? "," : "");
-            }
-
-            $this->where .= " {$condition[1]} ".strtoupper($condition[0])." ({$list}) ";
-
-        } elseif($operand == 'like' || $operand == 'not like') {
-
-            $this->where .= " {$condition[1]} ".strtoupper($condition[0])." '{$condition[2]}' ";
-        } elseif($operand == 'between' || $operand == 'not between') {
-            $this->where .= " {$condition[1]} ".strtoupper($condition[0])." {$condition[2]} ";
-        } else {
-            $count = count($condition);
-            switch($count)
-            {
-                case 1:
-                    {
-                        $keys = array_keys($condition);
-                        $this->where .= " {$keys[0]} = {$condition[$keys[0]]} ";
-                    } break;
-                case 2:
-                    {
-                        $this->where .= " {$condition[0]} = {$condition[1]} ";
-                    } break;
-                case 3:
-                    {
-                        switch($condition[1])
-                        {
-                            case ">":
-                            case "<":
-                            case ">=":
-                            case "<=":
-                            case "<>":
-                            case "=":
-                            case "!=":
-                                {
-                                    $this->where .= " {$condition[0]} {$condition[1]} {$condition[2]} ";
-                                } break;
-                            default: throw new Exception("Ошибка в конструкции WHERE! Неверный оператор сравнения!"); break;   
-
-                        }
-                        
-                    } break;
-                default: throw new Exception("Ошибка в конструкции WHERE! Неверно задан массив значений!"); break;
-            }
-        }
-        return $this;    
+        $this->where = $condition->getRaw();
+        return $this;
     }
 
      /**
@@ -426,41 +243,27 @@ class Select implements BaseInterface, SqlWhere, SelectFunctionInterface, SqlQue
         return $this;
     }
 
-     /**
-     * создает by-конструкцию
-     * 
-     * @param array|string $condition
-     * @return $this
-     */
-    public function join(string $table2, array $columns_table1, string $operator = "")
+    public function leftJoin(array $conditionOne, array $conditionTwo)
     {
-        switch(mb_strtolower($operator))
-        {
-            case "inner":
-                {
-                    $this->join .= " INNER JOIN";
-                } break;
-            case "left":
-                {
-                    $this->join .= " LEFT JOIN";
-                } break;
-            case "right":
-                {
-                     $this->join .= " RIGHT JOIN";
-                } break;
-            case "":
-                {
-                    $this->join .= " INNER JOIN";
-                } break;
-            default: throw new Exception("Ошибка в конструкции JOIN! Неверно задан оператор join!"); break;
-        }
+        $this->join = " LEFT JOIN ";
+        $this->join($conditionOne, $conditionTwo);
+        return $this;
+    }
 
-        $this->join .= " {$table2} ON ";
-        $cnt = count($columns_table1);
+    public function rightJoin(array $conditionOne, array $conditionTwo)
+    {
+        $this->join = " RIGHT JOIN ";
+        $this->join($conditionOne, $conditionTwo);
+        return $this;
+    }
+
+    private function join(array $conditionOne, array $conditionTwo)
+    {
+        $keys = array_keys($conditionOne);
+        $this->join .= " {$keys[0]} {$conditionOne[$keys[0]]} ON ";
+        $cnt = count($conditionTwo);
         $idx = 0;
-
-
-        foreach ($columns_table1 as $key => $value)
+        foreach ($conditionTwo as $key => $value)
         {
             $this->join .= " {$key} = {$value}" . (++$idx < $cnt ? "," : " ");
         }

@@ -1,6 +1,7 @@
 <?php
 namespace RomanN44\DML_instructions;
 
+
 interface SqlWhere
 {
     /**
@@ -10,12 +11,10 @@ interface SqlWhere
      * @param string $operator 
      * @return $this
      */
-    public function where(array $condition, string $operator = "");
+    public function where(array $condition);
 
-    /**
-     * отчищает значение where
-     * 
-     * @return $this
-     */
-    public function clearWhere();
+    public function andWhere(array $condition);
+
+    public function orWhere(array $condition);
+
 }

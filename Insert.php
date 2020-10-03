@@ -61,28 +61,6 @@ class Insert implements BaseInterface, InsertFunctionInterface
     }
 
     /**
-     * отчищает sql-команду и прочие конскрукции
-     * 
-     * @return $this
-     */
-    public function clear()
-    {
-        $this->instruction = "";
-        $this->clearTable();
-    }
-
-    /**
-     * отчищает value-конструкцию
-     * 
-     * @return $this
-     */
-    public function valueClear()
-    {
-        $this->value = "";
-        return $this;
-    }
-
-    /**
      * Присваевает значение переменной $table 
      * 
      * @param string $tableName параметр функции
@@ -137,19 +115,6 @@ class Insert implements BaseInterface, InsertFunctionInterface
             }
             $this->columns = $list;
         }
-        return $this;
-    }
-
-    /**
-     * отчищает значение переменной tableName и columns
-     * 
-     * @return $this
-     */
-    public function clearTable()
-    {
-        $this->tableName = "";
-        $this->columns = "";
-        $this->countColumns = 0;
         return $this;
     }
 

@@ -10,12 +10,4 @@ interface UpdateFunctionInterface
      * @return $this
      */
     public function set(array $condition);
-
-    /**
-     * отчищает значение set
-     * 
-     * @return $this
-     */
-    public function clearSet();
-
 }

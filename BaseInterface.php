@@ -10,14 +10,6 @@ interface BaseInterface
      */
     public function getRaw();
 
-
-    /**
-     * отчищает sql-команду и прочие конскрукции
-     * 
-     * @return $this
-     */
-    public function clear();
-
         /**
      * Присваевает значение переменной $table 
      * 
@@ -25,12 +17,5 @@ interface BaseInterface
      * @return $this;
      */
     public function table(string $tableName);
-
-    /**
-     * отчищает значение переменной tableName
-     * 
-     * @return $this
-     */
-    public function clearTable();
 
 }

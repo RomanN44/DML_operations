@@ -12,13 +12,6 @@ interface SelectFunctionInterface
     public function select($columns = array("*"));
 
      /**
-     * отчищает значение переменной $select 
-     * 
-     * @return $this;
-     */
-    public function clearSelect();
-
-     /**
      * Присваевает значение переменной $table 
      * 
      * @param string $tableName параметр функции
@@ -35,26 +28,12 @@ interface SelectFunctionInterface
     public function orderBy ($condition);
 
     /**
-     * отчищает значение переменной $orderBy 
-     * 
-     * @return $this;
-     */
-    public function clearOrderBy();
-
-    /**
      * Создает group by конструкцию
      * 
      * @param array|string $condition
      * @return $this;
      */
     public function groupBy ($condition);
-
-    /**
-     * отчищает значение переменной $groupBy 
-     * 
-     * @return $this;
-     */
-    public function clearGroupBy();
 
 
     /**
@@ -63,28 +42,10 @@ interface SelectFunctionInterface
      * @param string $tableName
      * @return $this;
      */
-    public function join(string $table2, array $columns_table1, string $operator = "");
 
-    /**
-     * отчищает значение переменной $join 
-     * 
-     * @return $this;
-     */
-    public function clearJoin();
+    public function leftJoin(array $conditionOne, array $conditionTwo);
 
-    /**
-     * отчищает значение переменной $limit 
-     * 
-     * @return $this;
-     */
-    public function clearLimit();
-
-    /**
-     * отчищает значение переменной $offset 
-     * 
-     * @return $this;
-     */
-    public function clearOffset();
+    public function rightJoin(array $conditionOne, array $conditionTwo);
 
     public function limit(int $limit);
 
